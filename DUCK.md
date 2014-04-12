@@ -1,16 +1,5 @@
-# Need to;
+# TODOS;
 
-## Write
-
-- [x]: Project organization
-- [x]: managing dependencies using bower + npm
-- [ ]: README
-
-
-## DO
-
-- [x]: quick cover
-
-# Future;
-
-- [ ]: proper cover
+- [ ] add cover
+- [ ] add book.txt
+- [ ] add README intro
