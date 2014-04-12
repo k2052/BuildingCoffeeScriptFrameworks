@@ -10,7 +10,7 @@ This book is your guidebook into the world of CoffeeScript frameworks. It covers
 
 ## Planned Table of Contents
 
--[ ] Introduction
+- [ ] Introduction
   - [ ] How This Book Is Arranged
 - Building CoffeeScript Frameworks
   - Managing your project
