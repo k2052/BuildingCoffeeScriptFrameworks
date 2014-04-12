@@ -1,4 +1,4 @@
-# Building CoffeeScript Frameworks: Build your own Backbone
+# Building CoffeeScript Frameworks
 
 Remember how frustrating it was? Maybe it wasn't in the docs. Maybe it was something you forgot. Or maybe it was just a bug.
 
