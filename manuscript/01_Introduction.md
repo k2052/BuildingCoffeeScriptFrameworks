@@ -3,7 +3,7 @@
 The web today demands much of its keepers, we have abstraction after abstraction to keep up with;
 frameworks, template engines, packaging systems, compile to JS languages, and even entirely new platforms (think TypeScript) that just happen to use the web. It is daunting just too keep up with all the new doodads much less learn how they work.
 
-## The three types CoffeeScript/JS Frameworks
+## The three types of CoffeeScript/JS Frameworks
 
 Modern Web frameworks fall into three main categories;
 
