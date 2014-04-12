@@ -8,18 +8,10 @@ This book is about magic. The behind the scenes of the frontend frameworks we us
 
 This book is your guidebook into the world of CoffeeScript frameworks. It covers everything I thought I should know but was too lazy to learn until now.
 
-## Planned Table of Contents
+## Table of Contents
 
-- [ ] Introduction
-  - [ ] How This Book Is Arranged
-- Building CoffeeScript Frameworks
-  - Managing your project
-    - npm
-    - bower
-  - Grunting
-    - tips
-  - Testing
-    - Chai, Mocha and Sinon
+## Planned Chapters
+
 - A brief review of CoffeeScript
   - How Prototypes work
   - Classes
