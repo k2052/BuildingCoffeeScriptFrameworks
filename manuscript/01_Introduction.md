@@ -9,7 +9,7 @@ Modern Web frameworks fall into three main categories;
 
 ### 1. *Component/Module based* 
 
-These are frameworks designed for large applications. They have an opinionated way of structuring your application but when you follow it you get a lot of stuff for free. Rather than simply carry over patterns from other types of app development, they often have invented entirely new ones. [Ember.js](http://emberjs.com/) is the most well known representative of this category.
+Frameworks designed for large applications. They have an opinionated way of structuring your application but when you follow it you get a lot of stuff for free. Rather than simply carry over patterns from other types of app development, they often have invented entirely new ones. [Ember.js](http://emberjs.com/) is the most well known representative of this category.
 
 ### 2. *Platforms* 
 
