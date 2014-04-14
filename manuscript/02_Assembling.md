@@ -116,6 +116,8 @@ That does it for bower, for the moment.
 There was once a dark time in the JS world. Assembling things was hard back then. We built our JS projects using
 giant monstrosities of such enormous complexity and size that only wisest wizards among us could operate them. These monsters [^Monsters]: took XMl files to compile our xml files to compile our JSON to a task file that was finally ran by a horde of json-to-xml parsers that then ran a shell script. It was hard, complex and rarely worked smoothly. Building with these tools, was simply put, grunt work.
 
+[^Monsters]: Monsters like Ant and Apache build.
+
 Times have changed. The days have gotten brighter and the nights shorter. The darkness is held back for a time at least, by a plethora of new and simple tools that now populate our land. One tool in particular, rose up to save us, a tool called grunt.
 
 Grunt is a task runner designed to take the grunt work out of assembling a JS project. It has tasks for everything from minification to unit testing. It will make building even the most complicated of JS projects leisurely work.
@@ -131,6 +133,8 @@ Installing _grunt-cli_ will make a grunt wrapper command available globally. Whe
 ### package.json
 
 If you have used npm to manage your JS projects then you are familiar with the package.json [^package.json-guide] format. It holds meta data about your project and any dependencies it has. A basic grunt project looks like this:
+
+[^package.json-guide]: An excellent interactive guide on the package.json format is available at http://package.json.nodejitsu.com/
 
 {lang=json}
 ~~~~~~~
@@ -377,11 +381,6 @@ With any technology you are going to experience some pains and fustrations, hope
 #### Tests Hang or Never Run
 
 This is usually due to errors that only the browser will catch. Grunt is bad about telling you when they're happening so you'll need to open test.html in a real browser and view them there. The console should reveal any issues.
-
-### Footnotes
-
-[Monsters]: Monsters like Ant and Apache build.
-[package.json-guide]: An excellent interactive guide on the package.json format is available at http://package.json.nodejitsu.com/
 
 ## Testing Our Framework
 
