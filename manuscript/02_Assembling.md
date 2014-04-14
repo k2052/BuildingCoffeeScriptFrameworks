@@ -132,9 +132,9 @@ Installing _grunt-cli_ will make a grunt wrapper command available globally. Whe
 
 ### package.json
 
-If you have used npm to manage your JS projects then you are familiar with the package.json [^package.json-guide] format. It holds meta data about your project and any dependencies it has. A basic grunt project looks like this:
+If you have used npm to manage your JS projects then you are familiar with the package.json [^json-guide] format. It holds meta data about your project and any dependencies it has. A basic grunt project looks like this:
 
-[^package.json-guide]: An excellent interactive guide on the package.json format is available at http://package.json.nodejitsu.com/
+[^json-guide]: An excellent interactive guide on the package.json format is available at http://package.json.nodejitsu.com/
 
 {lang=json}
 ~~~~~~~
