@@ -13,7 +13,7 @@ Frameworks designed for large applications. They have an opinionated way of stru
 
 ### 2. *Platforms* 
 
-Platforms typically combine a compile-to-js language with a framework or library. Sometimes they even abstract away HTML or even CSS. [Dart](https://www.dartlang.org/), [Cappuccino](http://www.cappuccino-project.org/), [ClojureScript](https://github.com/clojure/clojurescript) fall into this category. 
+Platforms typically combine a compile-to-js language with a framework or library. Sometimes they even abstract away HTML or even CSS. [Dart](https://www.dartlang.org/), [Cappuccino](http://www.cappuccino-project.org/), [ClojureScript](https://github.com/clojure/clojurescript) and [Elm](http://elm-lang.org) fall into this category. 
 
 ### 3. *Design Pattern Based/Minimalist* 
 
