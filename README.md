@@ -12,9 +12,6 @@ This book is your guidebook into the world of CoffeeScript frameworks. It covers
 
 ## Planned Chapters
 
-- A brief review of CoffeeScript
-  - How Prototypes work
-  - Classes
 - Building blocks of a framework
   - Modules
   - Events
