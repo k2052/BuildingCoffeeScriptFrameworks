@@ -1009,4 +1009,4 @@ cat.set("name", "Wiswell")
 
 It's that simple!
 
-I> The examples/specs for this chapter are available at [https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/tree/chapter-4](https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/tree/chapter-4)
+I> The examples and specs for this chapter are available at [https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/tree/chapter-4](https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/tree/chapter-4)

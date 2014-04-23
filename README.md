@@ -17,18 +17,18 @@ This book is your guidebook into the world of CoffeeScript frameworks. It covers
   - Events
   - Routing
   - Data Binding
-- The MVC
-  - Models
-    - A simple model
-    - A full fledged Model
-  - Views
-  - Controllers
+- Models
+  - A simple model
+  - A full fledged Model
+- Views
+- Controllers
 - Bringing it all together
   - Syncing
     - AJAX
     - SSE
   - Push states
   - Controller Stacks
+- Our own Framework
 - An app with our new framework
   - Organization
   - Tests
