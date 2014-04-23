@@ -560,9 +560,81 @@ Animal.bind 'animals:talking', =>
 Animal.trigger 'animals:talking'
 ~~~~~~~
 
-It might look complicated, but it's actually really straightforward. The callback-y nature of CoffeeScript/JavaScript makes it trivial to implement
+It might look complicated, but it's actually really straightforward. The callback-y nature of CoffeeScript/JavaScript makes it trivial to implement. At their core events handling systems are a Pub/Sub pattern. 
 
-First, we need to define events object to hold our Events functionality:
+### Pub/Sub
+
+A publish-subscribe pattern is as simple as hash of event names mapped to callback methods. Then we only need to make sure we publish through the methods on this class; so the class handle figuring out the callbacks to trigger for an event.
+
+First we need to define the PubSub class:
+
+{lang=coffeescript}
+~~~~~~~
+class PubSub
+  constructor: ->
+    @channels = {}
+~~~~~~~
+
+This has a channels object to hold any events. Now we need a way to subscribe to events:
+
+{lang=coffeescript}
+~~~~~~~
+  subscribe: (name, callback, context=undefined) ->
+    context or= @
+    @channels[name] = [] unless @channels[name]?
+    @channels[name].push context: context, callback: callback
+    @
+~~~~~~~
+
+Our subscribe method takes an event name a callback and optional context to execute the callback in.
+To publish we simple need to call the callback for the event name:
+
+{lang=coffeescript}
+~~~~~~~
+  publish: (name, data...) ->
+    for sub in @channels[name]
+      sub.callback.apply(sub.context, data)
+~~~~~~~
+
+Now what if we wanted to unsubscribe? Simple, we just need to remove the channel from @channels:
+
+{lang=coffeescript}
+~~~~~~~
+  unsubscribe: (name, callback) ->
+    for sub, i in @channels[name]
+      @channels[name].splice(i, 1) if sub.callback == callback
+~~~~~~~
+
+To utilize this is is easy:
+
+{lang=coffeescript}
+~~~~~~~
+describe 'PubSub', ->
+  data     = null
+  spy      = null
+  pubSub   = null
+   
+  beforeEach ->
+    data   = 'cats'
+    pubSub = new pubSub
+    spy    = sinon.spy() 
+
+  it 'subscribes and publishes', ->
+    pubSub.subscribe 'channel', spy
+    pubSub.publish   'channel', data
+    expect(spy).toHaveBeenCalledWith(data)
+   
+  it 'handles unsubscribe', ->
+    pubSub.subscribe   'channel', spy
+    pubSub.unsubscribe 'channel', spy
+    pubSub.publish     'channel', data
+    expect(spy).not.toHaveBeenCalled()
+~~~~~~~
+
+### Implementing our Events Handler
+
+Now that we know PubSub let's build a more full fledged events system. First, we need to define an events object to 
+hold our Events functionality:
 
 {lang=coffeescript}
 ~~~~~~~
@@ -837,6 +909,85 @@ $(window).on 'popstate' ->
 But let's not get ahead of ourselves. First we have some data binding to dive into.
 
 ## Data Binding
+
+Data binders appear to be quite complex but this is mostly due to all the convenience features they come with. At their core, data binders are nothing more than some decoration around a PubSub pattern.
+
+A data-binding system can be boiled down to three elements
+
+1. A way of specifying which UI elements are bound to which properties
+2. A way to monitor changes both on the UI and on the properties
+3. A way to trigger/alert both the UI and the object of any changes
+
+All of these features come with any of the DOM libraries like jQuery. In fact, all we really need to hook up a basic data binder class is to ask jQuery when things are changing and tell it what callbacks to hit when they do.
+
+A simple data binder could be implemented like this:
+
+{lang=coffeescript}
+~~~~~~~
+class DataBinder
+  
+  # Take an objectid so the element can be uniquely identified in the DOM.
+  constructor: (objectid) ->
+    # Use jQuery for the PubSub. But we could simply use the Events class we constructed earlier.
+    @pubSub   = $ {}
+
+    # The attribute to bind to
+    attribute = "data-bind-#{objectid}"
+
+    # An Event name
+    message = "#{objectid}:change"
+    
+    # Listen for changes to the element
+    $(document).on "change", "[#{attribute}]", (event) =>   
+      $elem = $(event.target)
+      @pubSub.trigger message, [$elem.attr(attribute), $elem.val()]
+    
+    # Listen for events
+    @pubSub.on message, (event, property, new_val) ->
+      for elem in $("[#{attribute}=#{property}]")
+        $elem = $(elem)
+
+        if $elem.is("input, textarea, select")
+          $elem.val new_val
+        else
+          $elm.html new_val
+~~~~~~~
+
+And we can utilize it like so:
+
+{lang=coffeescript}
+~~~~~~~
+# We will need some HTML for this too work
+# HTML <input type="text" data-bind-cat-1="name" />
+class Cat
+  binder: null
+  pubSub: null
+  message: ''
+   
+  # Every time we set an attribute on cat we need to trigger the change event on DataBinder instance
+  set: (attr, val) ->
+    @[attr] = val
+    @pubSub.trigger @message, [attr, val]
+
+  get: (attr) -> 
+    @[attr]
+
+  constructor: (id) ->
+    @binder  = new DataBinder(id)
+    @pubSub  = @binder.pubSub
+    @message = "#{id}:change"
+     
+    @pubSub.on @message, (event, attr, value) =>
+      @[attr] = value
+
+cat = new Cat("cat-1")
+cat.set("name", "Wiswell")
+~~~~~~~
+
+It's that simple!
+
+
+
 
 
 
