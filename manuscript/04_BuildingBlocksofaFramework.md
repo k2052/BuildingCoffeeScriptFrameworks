@@ -5,9 +5,9 @@ our framework will rest upon. In this chapter we will build classes for handling
 
 ## Modules/Mixins
 
-Mixins in JavaScript are merely the insertion of methods from one object into another. So, let's start building our modules class by figuring out how to "insert" a function into a class.
+Mixins in JavaScript are merely the insertion of methods from one object into another. Let's start building our modules class by figuring out how to "insert" a function into a class.
 
-### Inserting Methods Onto Classes
+### Injecting Methods
 
 First we need a function:
 
@@ -23,6 +23,7 @@ Then we need a class:
 ~~~~~~~
 class Cat
 ~~~~~~~
+
 How then to add the method _talk()_ to the class _Cat_? If we remember that CoffeeScript classes are just objects, it's easy to see the solution; we simply need to set the _meow_ attribute of _Cat_ to the function:
 
 {lang=coffeescript}
@@ -30,7 +31,7 @@ How then to add the method _talk()_ to the class _Cat_? If we remember that Coff
 Cat['meow'] = meow
 ~~~~~~~
 
-We now can call `something()` on Cat.
+We now can call `meow()` on Cat:
 
 {lang=coffeescript}
 ~~~~~~~
@@ -55,13 +56,11 @@ it "should meow", ->
   cat.should.equal "something"
 ~~~~~~~
 
-A> The source for the above specs is available at https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/insertingMethods_spec.coffee
+I> The source for the above specs is available at [https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/insertingMethods_spec.coffee](https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/insertingMethods_spec.coffee)
 
 ### Building a Module Class
 
-Constructing a mixin base class from here, is a piece of cake.
-
-Define the class:
+Constructing a mixin base class from here is a piece of cake. First define the module class:
 
 {lang=coffeescript}
 ~~~~~~~
@@ -83,7 +82,7 @@ Loop through the keys (functions and properties etc) in the obj and set them on 
       @::[key] = value
 ~~~~~~~
 
-Now method for including class methods (aka extending):
+Now add a method for including class methods (aka extending):
 
 {lang=coffeescript}
 ~~~~~~~
@@ -92,7 +91,7 @@ Now method for including class methods (aka extending):
       @[key] = value
 ~~~~~~~
 
-Add we use it like this:
+Add then we can use it like this:
 
 {lang=coffeescript}
 ~~~~~~~
@@ -115,13 +114,13 @@ it 'should be able to talk', ->
   cat.talk().should.equal "growl!"
 ~~~~~~~
 
-A> The source for the above specs is available at https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/moduleClass_spec.coffee
+I> The source for the above spec is available at [https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/moduleClass_spec.coffee](https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/moduleClass_spec.coffee)
 
 This is pretty good but we can do a lot better.
 
 ### A Class Mixer
 
-This is great for an inheritance model, but breaks down a bit in other use cases. What if we wanted to generate new classes dynamically that are a mix of two or more classes? Since classes in JS are just objects, the solution is pretty straightforward.
+What we just create is great for an inheritance model but breaks down a bit in other use cases. What if we wanted to generate new classes dynamically that are a mix of two or more classes? Since classes in JS are just objects, the solution is pretty straightforward.
 
 First we need to declare a function for mixing classes. It should take a base class and a series of classes to mixin:
 
@@ -169,7 +168,7 @@ class Duck
     return true 
 ~~~~~~~
 
-Then mix them together into a new class
+Then mix them together into a new class:
 
 {lang=coffeescript}
 ~~~~~~~
@@ -181,11 +180,11 @@ it 'should have fur and a bill', ->
   platypus.hasBill().should.equal true
 ~~~~~~~
 
-A> The source for the above specs is available at https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/classMixer_spec.coffee
+I> The source for the above specs is available at [https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/classMixer_spec.coffee](https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/classMixer_spec.coffee)
 
 ### Inside "extends"
 
-In the last few examples we have seen a lot of the `extends` keyword. Javascript does not have this built in, so how is it implemented? Understanding how it works will be important for understanding the final bits of our mixin recipe.
+In the last few examples we have seen a lot of the `extends` keyword. JavaScript does not have this built in, so how is it implemented? Understanding how extends works will be important for understanding the final bits of our mixin recipe.
 
 Imagine the following classes:
 
@@ -259,7 +258,7 @@ child.__super__ = parent.prototype;
 
 ### Scopes. Say hello to the IIFE
 
-Before we move on we need to understand a bit about scope. We have seen a lot of code like: 
+Before we move on we need to understand a bit about scope. You probably have seen a lot of code like: 
 
 {lang=js}
 ~~~~~~~ 
@@ -268,9 +267,9 @@ Before we move on we need to understand a bit about scope. We have seen a lot of
 }).call(this);
 ~~~~~~~
 
-This is a _Immediately-invoked function expression_ or _IIFE_. An IIFE is typically used to maintain scope and make sure `this` points to the correct object. To understand why this is necessary we need to understand a bit more about JavaScripts idea of `this`. `this` in javascript is quite a bit different than the `self` or `this` you might be used to from other languages.
+This is a _Immediately-invoked function expression_ or _IIFE_. An IIFE is typically used to maintain scope and make sure `this` points to the correct object. To understand why this is necessary we need to understand a bit more about JavaScript's idea of _this_. _this_ in JavaScript is quite a bit different than the _self_ or _this_ you might be used to from other languages.
 
-What `this` refers to in JS can change depending on the context in which the function is executed. The best way to see how is through some examples.
+What _this_ refers to in JS can change depending on the context in which the function is executed. The best way to see how is through some examples.
 
 Let's say we have a function that returns a value:
 
@@ -286,7 +285,7 @@ it 'should return 2', ->
   getValue().should equal 2
 ~~~~~~~
 
-A> The source for the above spec is available at https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/scopes-getValue1_spec.coffee
+I> The source for the above spec is available at [https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/scopes-getValue1_spec.coffee](https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/scopes-getValue1_spec.coffee)
 
 Now let's say we wanted to preserve the value of v even if we set it. (Even though it's redundant in this case it can 
 be extremely useful)
@@ -304,7 +303,7 @@ it 'should return 1', ->
   getValue().should equal 1
 ~~~~~~~
 
-A> The source for the above spec is available at https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/scopes-getValue2_spec.coffee
+I> The source for the above spec is available at [https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/scopes-getValue2_spec.coffee](https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/scopes-getValue2_spec.coffee)
 
 The resulting JS for getValue is:
 
@@ -327,7 +326,7 @@ getValue = (() ->
 )(v)
 ~~~~~~~
 
-Would result in the following JS
+Would result in the following JS:
 
 {lang=js}
 ~~~~~~~
@@ -335,10 +334,10 @@ getValue = (function(v) {
   return function() {
     return v;
   };
-}, v);
+}, v); // WAT?
 ~~~~~~~
 
-I apologize for that brief but necessary detour, now where were we? Oh yes, `v` has just been scoped correctly by passing it into an _IIFE_. Where this (no pun intended) gets interesting is when we start modifying and controlling _this_. Let's take a look at a counter example -- no, not that type of counter, a counting counter.
+I apologize for that brief but necessary detour. Now, where were we? Oh yes, `v` has just been scoped correctly by passing it into an _IIFE_. Where this (no pun intended) gets interesting is when we start modifying and controlling _this_. Let's take a look at a counter example -- no, not that type of counter, a counting counter.
 
 {lang=coffeescript}
 ~~~~~~~
@@ -365,8 +364,8 @@ it "should fail to increment", ->
   counter.val.should.equal 0
 ~~~~~~~
 
-The pointer to increment (-inc_) changes the scope of _this_ in increment to the global object.
-When increment tries to increment _this.val_ it encounters _undefined_. We can modify the context of inc by using call:
+The pointer to increment (_inc_) changes the scope of _this_ inside of increment to the global object.
+Thus, when increment tries to increment _this.val_ it encounters _undefined_. We can modify the context of inc by using call:
 
 {lang=coffeescript}
 ~~~~~~~
@@ -381,9 +380,9 @@ it "should increment val on the global scope", ->
   counter.val.should eq 1
 ~~~~~~~
 
-A> The source for the above spec is available at https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/scopes-counterIncrement_spec.coffee
+I> The source for the above specs is available at [https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/scopes-counterIncrement_spec.coffee](https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/scopes-counterIncrement_spec.coffee)
 
-Another way to alter the scope of an object is through the use of the _new_ operator. _new_ returns an object with all the properties, functions, values etc scoped to that object.
+Another way to alter the scope of an object is through the use of the _new_ operator; _new_ returns an object with all the properties, functions, values etc scoped to that object.
 
 {lang=coffeescript}
 ~~~~~~~
@@ -443,7 +442,7 @@ Now we will use apply to call the _included_ callback in the context of this cla
     obj.included?.apply(this)
 ~~~~~~~
 
-I> The _included_ callback allows a base class to be alerted when it has been included.
+T> The _included_ callback allows a base class to be alerted when it has been included.
 
 Finally, we will return _this_ so the method is chainable:
 
@@ -537,9 +536,11 @@ it 'should be able to talk', ->
   cat.talk().should.equal "growl!"
 ~~~~~~~
 
+I> The source for the above spec is available at [https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/module_spec.coffee](https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/module_spec.coffee)
+
 ### Namespacing
 
-One final thing, the prototypal nature nature of JavaScript makes namespacing things dirt simple. 
+The prototypal nature of JavaScript makes namespacing things dirt simple. 
 To place our `Module` class inside of a scope we can just do:
 
 {lang=coffeescript}
@@ -560,13 +561,13 @@ Animal.bind 'animals:talking', =>
 Animal.trigger 'animals:talking'
 ~~~~~~~
 
-It might look complicated, but it's actually really straightforward. The callback-y nature of CoffeeScript/JavaScript makes it trivial to implement. At their core events handling systems are a Pub/Sub pattern. 
+It might look complicated but it's actually really straightforward. The callbacky nature of CoffeeScript/JavaScript makes it trivial to implement. At their core, events are simply a Pub/Sub pattern. 
 
 ### Pub/Sub
 
-A publish-subscribe pattern is as simple as hash of event names mapped to callback methods. Then we only need to make sure we publish through the methods on this class; so the class handle figuring out the callbacks to trigger for an event.
+A publish-subscribe pattern can be implemented using a hash of event names mapped to callback methods. Then we only need to make sure we publish through the methods on this class; so the class handles figuring out the callbacks to trigger for an event.
 
-First we need to define the PubSub class:
+First we need to define a PubSub class:
 
 {lang=coffeescript}
 ~~~~~~~
@@ -575,7 +576,7 @@ class PubSub
     @channels = {}
 ~~~~~~~
 
-This has a channels object to hold any events. Now we need a way to subscribe to events:
+This has a channels object to hold the events and their callbacks. Now we need a way to subscribe to events:
 
 {lang=coffeescript}
 ~~~~~~~
@@ -586,7 +587,7 @@ This has a channels object to hold any events. Now we need a way to subscribe to
     @
 ~~~~~~~
 
-Our subscribe method takes an event name a callback and optional context to execute the callback in.
+Our subscribe method takes an event name, a callback, and optional context to execute the callback in.
 To publish we simple need to call the callback for the event name:
 
 {lang=coffeescript}
@@ -596,7 +597,7 @@ To publish we simple need to call the callback for the event name:
       sub.callback.apply(sub.context, data)
 ~~~~~~~
 
-Now what if we wanted to unsubscribe? Simple, we just need to remove the channel from @channels:
+Now what if we wanted to unsubscribe? Simple, we just need to remove the channel from _@channels_:
 
 {lang=coffeescript}
 ~~~~~~~
@@ -631,6 +632,8 @@ describe 'PubSub', ->
     expect(spy).not.toHaveBeenCalled()
 ~~~~~~~
 
+I> The source for the above spec is available at [https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/pubSub_spec.coffee](https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/pubSub_spec.coffee)
+
 ### Implementing our Events Handler
 
 Now that we know PubSub let's build a more full fledged events system. First, we need to define an events object to 
@@ -646,10 +649,12 @@ Now we will need a method that takes an event name as a string and callback to c
 {lang=coffeescript}
 ~~~~~~~
   bind: (eventOrEvents, callback) ->
-    # Takes the event string and split it into an array of events. Allows multiple events to passed using spaces as a delimiter 
+    # Takes the event string and split it into an array of events. 
+    # Allows multiple events to passed using spaces as a delimiter 
     events = eventOrEvents.split(' ')
 
-    # Pulls the callbacks from the current class if they exist, if not then default to an empty object
+    # Pulls the callbacks from the current class if they exist,
+    # if not then default to an empty object
     calls = @hasOwnProperty('_callbacks') and @_callbacks or= {}
 
     # Loops over the events and sets the callbacks
@@ -669,11 +674,13 @@ Now we need a method to trigger events and call the callbacks:
     # Pull the event name from the first argument
     event = args.shift()
 
-    # Copy the callbacks for this event into a list array. Return if there are no callbacks for this event
+    # Copy the callbacks for this event into a list array. 
+    # Return if there are no callbacks for this event
     list = @hasOwnProperty('_callbacks') and @_callbacks?[event]
     return unless list
 
-    # Loop through each of the callbacks for this event and then call them with apply using the current class as the context
+    # Loop through each of the callbacks for this event 
+    # and then call them with apply using the current class as the context
     for callback in list
       if callback.apply(@, args) is false
         break
@@ -690,16 +697,19 @@ And finally, we will need a method to unbind any an event and its associated cal
       @_callbacks = {}
       return @
 
-    #  Pull a list of all the callbacks for this event. Return if there are no callbacks
+    #  Pull a list of all the callbacks for this event. 
+    # Return if there are no callbacks
     list = @_callbacks?[event]
     return @ unless list
 
-    #  If no specific callback is passed then unbind all the callbacks for the event and return this
+    #  If no specific callback is passed then unbind all the callbacks for the 
+    #  event and return this
     unless callback
       delete @_callbacks[event]
       return @
 
-    # Loop through the callbacks and when the callback to unbind is found splice it out.
+    # Loop through the callbacks and when the callback to unbind is found,
+    # splice it out.
     for cb, i in list when cb is callback
       list = list.slice()
       list.splice(i, 1)
@@ -716,10 +726,12 @@ The final events object looks like this:
 ~~~~~~~
 Events =
   bind: (eventOrEvents, callback) ->
-    # Takes the event string and split it into an array of events. Allows multiple events to passed using spaces as a delimiter 
+    # Takes the event string and split it into an array of events. 
+    # Allows multiple events to passed using spaces as a delimiter 
     events = eventOrEvents.split(' ')
 
-    # Pulls the callbacks from the current class if they exist, if not then default to an empty object
+    # Pulls the callbacks from the current class if they exist, 
+    # if not then default to an empty object
     calls = @hasOwnProperty('_callbacks') and @_callbacks or= {}
 
     # Loops over the events and sets the callbacks
@@ -734,11 +746,13 @@ Events =
     # Pull the event name from the first argument
     event = args.shift()
 
-    # Copy the callbacks for this event into a list array. Return if there are no callbacks for this event
+    # Copy the callbacks for this event into a list array. 
+    # Return if there are no callbacks for this event
     list = @hasOwnProperty('_callbacks') and @_callbacks?[event]
     return unless list
 
-    # Loop through each of the callbacks for this event and then call them with apply using the current class as the context
+    # Loop through each of the callbacks for this event 
+    # and then call them with apply using the current class as the context
     for callback in list
       if callback.apply(@, args) is false
         break
@@ -750,16 +764,19 @@ Events =
       @_callbacks = {}
       return @
 
-    #  Pull a list of all the callbacks for this event. Return if there are no callbacks
+    # Pull a list of all the callbacks for this event.
+    # Return if there are no callbacks
     list = @_callbacks?[event]
     return @ unless list
 
-    #  If no specific callback is passed then unbind all the callbacks for the event and return this
+    # If no specific callback is passed then unbind all the callbacks 
+    # for the event and return this
     unless callback
       delete @_callbacks[event]
       return @
 
-    # Loop through the callbacks and when the callback to unbind is found splice it out.
+    # Loop through the callbacks and when the callback to unbind is found, 
+    # splice it out.
     for cb, i in list when cb is callback
       list = list.slice()
       list.splice(i, 1)
@@ -782,6 +799,8 @@ it "can bind/trigger events", ->
   expect(spy).to.have.been.called
 ~~~~~~~
 
+I> The source for the above spec is available at [https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/events_spec.coffee](https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/events_spec.coffee)
+
 ## Routing
 
 Routing at its core is a lot simpler than you might think it is. It essentially consists of three pieces;
@@ -791,8 +810,6 @@ Routing at its core is a lot simpler than you might think it is. It essentially 
 3. Callback functions that are called for each route
 
 A simple implementation of a Router would look like this:
-
-The class:
 
 {lang=coffeescript}
 ~~~~~~~
@@ -816,8 +833,8 @@ A function to add a route to routes:
 ~~~~~~~    
   @add: (path, func) ->
     # A route has;
-    # 1. params in the form of splats like :year/:month/:day. These are passed and passed to the callback function 
-    #    as arguments
+    # 1. params in the form of splats like :year/:month/:day. 
+    #    These are extracted and passed to the callback function as arguments
     # 2. A regular expression to match the current path agains
     # 3. A callback function
     @routes.push {
@@ -843,11 +860,12 @@ We need to find the route that matches the current route (i.e the URL). We can u
         index = 1
         namedParams = {}
 
-        # Does this route have params defined? if so split them up and push the results onto 
-        # namedParams
+        # Does this route have params defined? if so split them up and
+        # push the results onto namedParams
         if route.params?
           for name in route.params
             namedParams[name.slice(1)] = results[index++]
+
         route.callback(namedParams)
 ~~~~~~~ 
 
@@ -871,7 +889,7 @@ An example of how this might be used:
 
 {lang=coffeescript}
 ~~~~~~~      
-describe "#process", ->
+describe "Router#process", ->
     api = result = ""
     beforeEach ->
       api = {
@@ -892,7 +910,7 @@ describe "#process", ->
       expect(result).toEqual({ year: "2012", month: "01", day: "01"})
 ~~~~~~~
 
-A> The source for the above can be found at 
+I> The source for the above can be found at [https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/router_spec.coffee](https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/router_spec.coffee)
 
 At this point, our router is missing one crucial thing, a concept of state. 
 It would be nice for the router to be aware of the current path and be able to manage current/past paths.
@@ -985,9 +1003,3 @@ cat.set("name", "Wiswell")
 ~~~~~~~
 
 It's that simple!
-
-
-
-
-
-
