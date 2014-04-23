@@ -120,7 +120,7 @@ This is pretty good but we can do a lot better.
 
 ### A Class Mixer
 
-What we just create is great for an inheritance model but breaks down a bit in other use cases. What if we wanted to generate new classes dynamically that are a mix of two or more classes? Since classes in JS are just objects, the solution is pretty straightforward.
+What we just created is great for an inheritance model but breaks down a bit in other use cases. What if we wanted to generate new classes dynamically that are a mix of two or more classes? Since classes in JS are just objects, the solution is pretty straightforward.
 
 First we need to declare a function for mixing classes. It should take a base class and a series of classes to mixin:
 
@@ -946,7 +946,8 @@ class DataBinder
   
   # Take an objectid so the element can be uniquely identified in the DOM.
   constructor: (objectid) ->
-    # Use jQuery for the PubSub. But we could simply use the Events class we constructed earlier.
+    # Use jQuery for the PubSub. But we could simply use the Events class 
+    # we constructed earlier.
     @pubSub   = $ {}
 
     # The attribute to bind to
@@ -982,7 +983,8 @@ class Cat
   pubSub: null
   message: ''
    
-  # Every time we set an attribute on cat we need to trigger the change event on DataBinder instance
+  # Every time we set an attribute on cat we need to trigger 
+  # the change event on the DataBinder instance
   set: (attr, val) ->
     @[attr] = val
     @pubSub.trigger @message, [attr, val]
