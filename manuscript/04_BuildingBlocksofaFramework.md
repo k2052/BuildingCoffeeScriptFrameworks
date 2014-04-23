@@ -13,7 +13,7 @@ First we need a function:
 
 {lang=coffeescript}
 ~~~~~~~
-meow: () ->
+meow = ->
   return "meow"
 ~~~~~~~
 
@@ -53,7 +53,7 @@ Then we can use the method on instances:
 ~~~~~~~
 it "should meow", ->
   cat = new Cat()
-  cat.should.equal "something"
+  cat.meow().should.equal "meow"
 ~~~~~~~
 
 I> The source for the above specs is available at [https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/insertingMethods_spec.coffee](https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/insertingMethods_spec.coffee)
@@ -78,9 +78,12 @@ Loop through the keys (functions and properties etc) in the obj and set them on 
 
 {lang=coffeescript}
 ~~~~~~~
-    for key, value of obj
+    for key, value of obj.prototype
       @::[key] = value
 ~~~~~~~
+
+W> Note how we loop of obj.prototype and not obj. If we looped over the obj itself we would end up
+W> including class methods onto the instance
 
 Now add a method for including class methods (aka extending):
 
@@ -122,37 +125,37 @@ This is pretty good but we can do a lot better.
 
 What we just created is great for an inheritance model but breaks down a bit in other use cases. What if we wanted to generate new classes dynamically that are a mix of two or more classes? Since classes in JS are just objects, the solution is pretty straightforward.
 
-First we need to declare a function for mixing classes. It should take a base class and a series of classes to mixin:
+First we need to declare a function for mixing classes. It should take a series of classes to mixin:
 
 {lang=coffeescript}
 ~~~~~~~
-mixOf = (base, mixins...) ->
+mixOf = (mixins...) ->
 ~~~~~~~
 
 Declare a class called `Mixed` which we will mix the other classes into. It will be returned as the new class from our function:
 
 {lang=coffeescript}
 ~~~~~~~
-  class Mixed
+  mixed = class Mixed
 ~~~~~~~
 
 Loop through the mixins and set them on the Mixed class:
 
 {lang=coffeescript}
 ~~~~~~~
-  for mixin in mixins by -1
+  for mixin in mixins by -1 # earlier mixins override later ones
     for name, method of mixin:: # instance methods
-      Mixed::[name] = method
+      mixed::[name] = method
 
     for name, method of mixin # class methods
-      Mixed[name] = method  
+      mixed[name] = method  
 ~~~~~~~
 
 Finally return the Mixed class:
 
 {lang=coffeescript}
 ~~~~~~~
-  return Mixed
+  return mixed
 ~~~~~~~
 
 Let's declare some classes to Mixin:
@@ -276,13 +279,13 @@ Let's say we have a function that returns a value:
 {lang=coffeescript}
 ~~~~~~~
 v = 1
-getValue: () ->
+getValue = () ->
   return v
 
 v = 2
 
 it 'should return 2', ->
-  getValue().should equal 2
+  getValue().should.equal 2
 ~~~~~~~
 
 I> The source for the above spec is available at [https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/scopes-getValue1_spec.coffee](https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/scopes-getValue1_spec.coffee)
@@ -300,7 +303,7 @@ getValue = do(v) ->
 v = 2
 
 it 'should return 1', ->
-  getValue().should equal 1
+  getValue().should.equal 1
 ~~~~~~~
 
 I> The source for the above spec is available at [https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/scopes-getValue2_spec.coffee](https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/scopes-getValue2_spec.coffee)
@@ -496,7 +499,7 @@ class Module
   @include: (obj) ->
     throw new Error('include(obj) requires obj') unless obj
 
-    for key, value of obj when key not in moduleKeywords
+    for key, value of obj.prototype when key not in moduleKeywords
       @::[key] = value
 
     obj.included?.apply(this)
@@ -617,19 +620,19 @@ describe 'PubSub', ->
    
   beforeEach ->
     data   = 'cats'
-    pubSub = new pubSub
+    pubSub = new PubSub()
     spy    = sinon.spy() 
 
   it 'subscribes and publishes', ->
     pubSub.subscribe 'channel', spy
     pubSub.publish   'channel', data
-    expect(spy).toHaveBeenCalledWith(data)
+    spy.should.have.been.calledWith(data)
    
   it 'handles unsubscribe', ->
     pubSub.subscribe   'channel', spy
     pubSub.unsubscribe 'channel', spy
     pubSub.publish     'channel', data
-    expect(spy).not.toHaveBeenCalled()
+    spy.called.should.be.false
 ~~~~~~~
 
 I> The source for the above spec is available at [https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/pubSub_spec.coffee](https://github.com/k2052/BuildingCoffeeScriptFrameworks.src/blob/chapter-4/spec/pubSub_spec.coffee)
@@ -641,14 +644,14 @@ hold our Events functionality:
 
 {lang=coffeescript}
 ~~~~~~~
-Events =
+class Events
 ~~~~~~~
 
 Now we will need a method that takes an event name as a string and callback to call when that event is triggered:
 
 {lang=coffeescript}
 ~~~~~~~
-  bind: (eventOrEvents, callback) ->
+  @bind: (eventOrEvents, callback) ->
     # Takes the event string and split it into an array of events. 
     # Allows multiple events to passed using spaces as a delimiter 
     events = eventOrEvents.split(' ')
@@ -670,7 +673,7 @@ Now we need a method to trigger events and call the callbacks:
 
 {lang=coffeescript}
 ~~~~~~~
-  trigger: (args...) ->
+  @trigger: (args...) ->
     # Pull the event name from the first argument
     event = args.shift()
 
@@ -691,7 +694,7 @@ And finally, we will need a method to unbind any an event and its associated cal
 
 {lang=coffeescript}
 ~~~~~~~
-  unbind: (event, callback) ->
+  @unbind: (event, callback) ->
     # If no event name is passed then unbind everything
     unless event
       @_callbacks = {}
@@ -724,8 +727,8 @@ The final events object looks like this:
 
 {lang=coffeescript}
 ~~~~~~~
-Events =
-  bind: (eventOrEvents, callback) ->
+class Events
+  @bind: (eventOrEvents, callback) ->
     # Takes the event string and split it into an array of events. 
     # Allows multiple events to passed using spaces as a delimiter 
     events = eventOrEvents.split(' ')
@@ -742,7 +745,7 @@ Events =
     # Returns this to support chaining
     @
 
-  trigger: (args...) ->
+  @trigger: (args...) ->
     # Pull the event name from the first argument
     event = args.shift()
 
@@ -758,7 +761,7 @@ Events =
         break
     true
 
-  unbind: (event, callback) ->
+  @unbind: (event, callback) ->
     # If no event name is passed then unbind everything
     unless event
       @_callbacks = {}
