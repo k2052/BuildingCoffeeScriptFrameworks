@@ -425,8 +425,9 @@ Throw an error if we don't get passed an object:
 
 {lang=coffeescript}
 ~~~~~~~
-    throw new Error('include(obj) requires obj') unless obj:
+    throw new Error('include(obj) requires obj') unless obj
 ~~~~~~~
+
 Loop through the properties of the object and include them on this class' prototype (instance):
 
 {lang=coffeescript}
@@ -489,7 +490,52 @@ And we will return _this_ so the method is chainable:
 
 Our final Module class looks like this:
 
+{lang=coffeescript}
+~~~~~~~
+moduleKeywords = ['included', 'extended']
+class Module
+  @include: (obj) ->
+    throw new Error('include(obj) requires obj') unless obj
+
+    for key, value of obj when key not in moduleKeywords
+      @::[key] = value
+
+    obj.included?.apply(this)
+    @
+
+  @extend: (obj) ->
+    throw new Error('extend(obj) requires obj') unless obj
+
+    for key, value of obj when key not in moduleKeywords
+      @[key] = value
+
+    obj.extended?.apply(this)
+    
+    @
+~~~~~~~
+
 And we can use it like this:
+
+{lang=coffeescript}
+~~~~~~~
+class Animal
+  talk: () ->
+    return "growl!"
+
+  @isInsect: () ->
+    return false
+
+class Cat extends Module
+  @include Animal
+  @extend Animal
+
+it 'should not be an insect', ->
+  Cat.isInsect().should.equal false
+
+it 'should be able to talk', ->
+  cat = new Cat
+  cat.talk().should.equal "growl!"
+~~~~~~~
 
 ### Namespacing
 
@@ -499,11 +545,298 @@ To place our `Module` class inside of a scope we can just do:
 {lang=coffeescript}
 ~~~~~~~
 Ryggard = {}
-
-# Set Module on Ryggard
 Ryggard.Module = Module
 ~~~~~~~
 
 ## Events
+
+Any CoffeeScript framework worth its weight needs a system for handling events. Something that looks like this:
+
+{lang=coffeescript}
+~~~~~~~
+Animal.bind 'animals:talking', => 
+  alert('Animals be talking')
+
+Animal.trigger 'animals:talking'
+~~~~~~~
+
+It might look complicated, but it's actually really straightforward. The callback-y nature of CoffeeScript/JavaScript makes it trivial to implement
+
+First, we need to define events object to hold our Events functionality:
+
+{lang=coffeescript}
+~~~~~~~
+Events =
+~~~~~~~
+
+Now we will need a method that takes an event name as a string and callback to call when that event is triggered:
+
+{lang=coffeescript}
+~~~~~~~
+  bind: (eventOrEvents, callback) ->
+    # Takes the event string and split it into an array of events. Allows multiple events to passed using spaces as a delimiter 
+    events = eventOrEvents.split(' ')
+
+    # Pulls the callbacks from the current class if they exist, if not then default to an empty object
+    calls = @hasOwnProperty('_callbacks') and @_callbacks or= {}
+
+    # Loops over the events and sets the callbacks
+    for name in events
+      calls[name] or= []
+      calls[name].push(callback)
+
+    # Returns this to support chaining
+    @
+~~~~~~~
+
+Now we need a method to trigger events and call the callbacks:
+
+{lang=coffeescript}
+~~~~~~~
+  trigger: (args...) ->
+    # Pull the event name from the first argument
+    event = args.shift()
+
+    # Copy the callbacks for this event into a list array. Return if there are no callbacks for this event
+    list = @hasOwnProperty('_callbacks') and @_callbacks?[event]
+    return unless list
+
+    # Loop through each of the callbacks for this event and then call them with apply using the current class as the context
+    for callback in list
+      if callback.apply(@, args) is false
+        break
+    true
+~~~~~~~
+
+And finally, we will need a method to unbind any an event and its associated callback:
+
+{lang=coffeescript}
+~~~~~~~
+  unbind: (event, callback) ->
+    # If no event name is passed then unbind everything
+    unless event
+      @_callbacks = {}
+      return @
+
+    #  Pull a list of all the callbacks for this event. Return if there are no callbacks
+    list = @_callbacks?[event]
+    return @ unless list
+
+    #  If no specific callback is passed then unbind all the callbacks for the event and return this
+    unless callback
+      delete @_callbacks[event]
+      return @
+
+    # Loop through the callbacks and when the callback to unbind is found splice it out.
+    for cb, i in list when cb is callback
+      list = list.slice()
+      list.splice(i, 1)
+      @_callbacks[event] = list
+      break
+
+    # Return this to support chaining
+    @
+~~~~~~~
+
+The final events object looks like this:
+
+{lang=coffeescript}
+~~~~~~~
+Events =
+  bind: (eventOrEvents, callback) ->
+    # Takes the event string and split it into an array of events. Allows multiple events to passed using spaces as a delimiter 
+    events = eventOrEvents.split(' ')
+
+    # Pulls the callbacks from the current class if they exist, if not then default to an empty object
+    calls = @hasOwnProperty('_callbacks') and @_callbacks or= {}
+
+    # Loops over the events and sets the callbacks
+    for name in events
+      calls[name] or= []
+      calls[name].push(callback)
+
+    # Returns this to support chaining
+    @
+
+  trigger: (args...) ->
+    # Pull the event name from the first argument
+    event = args.shift()
+
+    # Copy the callbacks for this event into a list array. Return if there are no callbacks for this event
+    list = @hasOwnProperty('_callbacks') and @_callbacks?[event]
+    return unless list
+
+    # Loop through each of the callbacks for this event and then call them with apply using the current class as the context
+    for callback in list
+      if callback.apply(@, args) is false
+        break
+    true
+
+  unbind: (event, callback) ->
+    # If no event name is passed then unbind everything
+    unless event
+      @_callbacks = {}
+      return @
+
+    #  Pull a list of all the callbacks for this event. Return if there are no callbacks
+    list = @_callbacks?[event]
+    return @ unless list
+
+    #  If no specific callback is passed then unbind all the callbacks for the event and return this
+    unless callback
+      delete @_callbacks[event]
+      return @
+
+    # Loop through the callbacks and when the callback to unbind is found splice it out.
+    for cb, i in list when cb is callback
+      list = list.slice()
+      list.splice(i, 1)
+      @_callbacks[event] = list
+      break
+
+    # Return this to support chaining
+    @
+~~~~~~~
+
+Now we can utilize events like:
+
+{lang=coffeescript}
+~~~~~~~
+class Animal extends Events
+
+it "can bind/trigger events", ->
+  Animal.bind 'animals:talking', spy
+  Animal.trigger 'animals:talking'
+  expect(spy).to.have.been.called
+~~~~~~~
+
+## Routing
+
+Routing at its core is a lot simpler than you might think it is. It essentially consists of three pieces;
+
+1. A matcher that matches routes to the current route/url.
+2. A storage mechanism for the routes. Usually just an array Regular expression strings mapped to callback functions.
+3. Callback functions that are called for each route
+
+A simple implementation of a Router would look like this:
+
+The class:
+
+{lang=coffeescript}
+~~~~~~~
+class Router
+  # An array to hold our route objects
+  @routes = []
+~~~~~~~
+
+A Regex parser that takes strings like _/blog/:year/:month/:day_ and routes them to a function.
+The splats (:year :month etc) are turned into params that are then passed in an hash to the function:
+
+{lang=coffeescript}
+~~~~~~~
+  @buildRegexString: (path) ->
+    path.replace(/\//g, "\\/").replace(/:(\w*)/g,"(\\w*)")
+~~~~~~~
+
+A function to add a route to routes:   
+
+{lang=coffeescript}
+~~~~~~~    
+  @add: (path, func) ->
+    # A route has;
+    # 1. params in the form of splats like :year/:month/:day. These are passed and passed to the callback function 
+    #    as arguments
+    # 2. A regular expression to match the current path agains
+    # 3. A callback function
+    @routes.push {
+      params: path.match(/:(\w*)/g)
+      regex: new RegExp(@buildRegexString(path))
+      callback: func
+    }
+~~~~~~~ 
+
+We need to find the route that matches the current route (i.e the URL). We can use the captures from the regex to generate the named params, then call the callback function with the params:
+
+{lang=coffeescript}
+~~~~~~~    
+  # Take a url to process. Default to the current path
+  @process: (url = window.location.pathname) ->
+    # Loop through the routes
+    for route in @routes
+      # math the current url against the route's regex
+      results = url.match(route.regex)
+      
+      # Do we have a match?
+      if results?
+        index = 1
+        namedParams = {}
+
+        # Does this route have params defined? if so split them up and push the results onto 
+        # namedParams
+        if route.params?
+          for name in route.params
+            namedParams[name.slice(1)] = results[index++]
+        route.callback(namedParams)
+~~~~~~~ 
+
+To utilize this is dead simple:
+
+{lang=coffeescript}
+~~~~~~~
+Router.add "/blog/:year/:month/:day", (params) ->
+  # code for the route goes here
+~~~~~~~
+
+Add when the DOM is ready we route the routes by calling Router.process
+
+{lang=coffeescript}
+~~~~~~~
+$(document).on "ready", ->
+  Router.process()
+~~~~~~~
+
+An example of how this might be used:
+
+{lang=coffeescript}
+~~~~~~~      
+describe "#process", ->
+    api = result = ""
+    beforeEach ->
+      api = {
+        testCallBack: (params)->
+          console.log "testCallBack"
+      }
+      spyOn(api, "testCallBack").andCallFake( (params)->
+        result = params
+      )
+      
+      Router.add blog_route, api.testCallBack
+      Router.process("/blog/2012/01/01")
+    
+    it "should find the route and execute the callback", ->
+      expect(api.testCallBack).toHaveBeenCalled()
+      
+    it "should execute the callback with the correct parameters", ->
+      expect(result).toEqual({ year: "2012", month: "01", day: "01"})
+~~~~~~~
+
+A> The source for the above can be found at 
+
+At this point, our router is missing one crucial thing, a concept of state. 
+It would be nice for the router to be aware of the current path and be able to manage current/past paths.
+A full implementation is beyond the scope of this chapter but we will get to it when we build our framework's final Router class.
+
+Our full fledged Router class will make use of the browser's history to hold path state. We will utilize the history's events for listening to path changes. It will look this:
+
+{lang=coffeescript}
+~~~~~~~
+$(window).on 'popstate' ->
+  # Match the new path
+~~~~~~~
+
+But let's not get ahead of ourselves. First we have some data binding to dive into.
+
+## Data Binding
+
 
 
